@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>northland projects</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #141413; --surface: #1a1a19; --surface-2: #222220; --surface-3: #2b2b29;
+  --line: #34342f; --line-2: #45453f;
+  --text: #f2f1ec; --text-2: #c3c2b7; --muted: #8a8980;
+  --accent: #3987e5;
+  --c-chrono: #3987e5; --c-engineering: #d95926; --c-games: #199e70; --c-automation: #c98500;
+  --c-web: #d55181; --c-twin-portals: #008300; --c-excalibur-con: #9085e9; --c-ttrpg: #e66767;
+  --c-other: #8a8980;
+  --s-active: #0ca30c; --s-shipped: #3987e5; --s-paused: #fab219; --s-prototype: #9085e9; --s-idea: #d55181;
+  --s-reference: #8a8980; --s-archived: #6b6b64; --s-drop: #55554f; --s-unknown: #8a8980;
+  --radius: 6px; --mono: ui-monospace, Consolas, "Cascadia Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+button, select, input { font: inherit; color: inherit; }
+.wrap { padding-block: 16px; padding-inline: 20px; max-width: 1700px; margin: 0 auto; }
+
+/* ---- top ---- */
+.top { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-bottom: 18px; }
+.totals { display: flex; gap: 10px; flex-wrap: wrap; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 10px 14px; min-width: 96px; }
+.tile .n { font-size: 26px; font-weight: 600; line-height: 1.1; }
+.tile .l { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.heat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 10px 14px 8px; flex: 1 1 640px; min-width: 0; overflow-x: auto; }
+.heat .hd { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  color: var(--muted); font-size: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+.heat svg { display: block; }
+.heat text { fill: var(--muted); font-size: 9px; }
+.legend { display: flex; gap: 8px; flex-wrap: wrap; }
+.legend button { background: none; border: 1px solid transparent; border-radius: 999px; padding: 1px 8px 1px 4px;
+  color: var(--text-2); font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.legend button:hover { border-color: var(--line-2); }
+.legend button.off { opacity: .4; }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* ---- layout ---- */
+.cols { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
+.cols.with-detail { grid-template-columns: 220px minmax(0, 1fr) minmax(360px, 480px); }
+@media (max-width: 1100px) { .cols, .cols.with-detail { grid-template-columns: 200px minmax(0, 1fr); }
+  .detail { grid-column: 1 / -1; } }
+@media (max-width: 720px) { .cols, .cols.with-detail { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- sidebar ---- */
+.side { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; position: sticky; top: 12px; }
+.side h3 { margin: 10px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.side h3:first-child { margin-top: 0; }
+.side label { display: flex; align-items: center; gap: 6px; padding: 2px 0; cursor: pointer; color: var(--text-2); font-size: 13px; }
+.side label:hover { color: var(--text); }
+.side label .cnt { margin-left: auto; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.side input[type=checkbox] { accent-color: var(--accent); margin: 0; }
+.side select, .side input[type=search] { width: 100%; background: var(--surface-2); border: 1px solid var(--line-2);
+  border-radius: 4px; padding: 5px 7px; color: var(--text); }
+.side .row { display: flex; gap: 6px; margin-top: 6px; }
+.side .row button, .btn { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 4px;
+  padding: 4px 9px; cursor: pointer; color: var(--text-2); font-size: 12px; }
+.side .row button:hover, .btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* ---- main ---- */
+.main { min-width: 0; }
+.bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.bar .count { color: var(--muted); font-size: 12px; }
+.tabs { display: inline-flex; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; }
+.tabs button { background: none; border: 0; padding: 4px 11px; cursor: pointer; color: var(--text-2); font-size: 12px; }
+.tabs button.on { background: var(--surface-3); color: var(--text); }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600;
+  position: sticky; top: 0; background: var(--surface); z-index: 1; cursor: pointer; user-select: none; white-space: nowrap; }
+th.sorted::after { content: " ▾"; color: var(--text-2); }
+tr.p { cursor: pointer; }
+tr.p:hover { background: var(--surface-2); }
+tr.p.sel { background: var(--surface-3); }
+td.name { font-weight: 600; white-space: nowrap; }
+td.name .sub { display: block; font-weight: 400; color: var(--muted); font-size: 12px; white-space: normal; max-width: 380px; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .02em;
+  border: 1px solid var(--chip, var(--muted)); color: var(--chip, var(--muted)); background: color-mix(in srgb, var(--chip, var(--muted)) 12%, transparent); white-space: nowrap; }
+.chip.guess { border-style: dashed; }
+.stack { color: var(--text-2); font-size: 12px; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dim { color: var(--muted); }
+.warn { color: var(--s-paused); }
+.mach { display: inline-flex; gap: 4px; }
+.mach span { font-family: var(--mono); font-size: 11px; background: var(--surface-3); border-radius: 3px; padding: 0 5px; color: var(--text-2); }
+.mach span.dirty { color: var(--s-paused); }
+.cnts { display: inline-flex; gap: 8px; font-size: 12px; }
+.cnts b { font-weight: 600; }
+.nobrief { color: var(--muted); font-style: italic; font-size: 12px; }
+.cat-row { cursor: pointer; } .cat-row:hover { background: var(--surface-2); }
+
+/* ---- detail ---- */
+.detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
+  position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; }
+.detail .hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.detail h2 { margin: 0 0 4px; font-size: 18px; }
+.detail .meta { color: var(--text-2); font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0 10px; }
+.detail .meta code { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.detail .paths { font-family: var(--mono); font-size: 11px; color: var(--muted); margin: 4px 0 10px; }
+.detail .paths div { overflow-wrap: anywhere; }
+.detail .x { background: none; border: 0; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; padding: 0 4px; }
+.detail .x:hover { color: var(--text); }
+.actions { display: flex; gap: 8px; margin: 8px 0 12px; flex-wrap: wrap; }
+.btn.primary { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); color: var(--text); }
+.md h2 { font-size: 16px; margin: 8px 0 4px; }
+.md h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 4px; font-weight: 600; }
+.md p { margin: 4px 0 8px; color: var(--text-2); }
+.md ul { margin: 2px 0 8px; padding-left: 18px; color: var(--text-2); }
+.md li { margin: 2px 0; }
+.md li.task { list-style: none; margin-left: -18px; }
+.md li.task input { accent-color: var(--accent); margin-right: 6px; pointer-events: none; vertical-align: -1px; }
+.md li.task.done { color: var(--muted); text-decoration: line-through; }
+.md code { font-family: var(--mono); font-size: 12px; background: var(--surface-3); border-radius: 3px; padding: 0 4px; }
+.md pre { background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px;
+  font-family: var(--mono); font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-2); }
+.md .q { color: var(--s-paused); font-weight: 600; }
+.md strong { color: var(--text); }
+.auto { border-left: 2px solid var(--line-2); padding-left: 10px; margin: 6px 0 10px; }
+.auto h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 4px; font-weight: 600; }
+.auto p { margin: 3px 0; color: var(--text-2); font-size: 12px; }
+.auto b { color: var(--text); font-weight: 600; }
+.sess { margin-top: 12px; }
+.sess li { color: var(--text-2); font-size: 12px; margin: 2px 0; }
+.sess .d { font-family: var(--mono); color: var(--muted); margin-right: 6px; }
+
+/* ---- tooltip ---- */
+#tip { position: fixed; z-index: 10; pointer-events: none; background: #0f0f0e; border: 1px solid var(--line-2);
+  border-radius: 4px; padding: 6px 9px; font-size: 12px; color: var(--text-2); max-width: 320px; display: none; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+#tip b { color: var(--text); } #tip div { white-space: nowrap; }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--surface-3);
+  border: 1px solid var(--line-2); border-radius: 4px; padding: 6px 12px; font-size: 12px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.foot { color: var(--muted); font-size: 11px; margin-top: 18px; }
+.foot a { color: var(--muted); }
+
+/* ---- sign-in gate (site build only) ---- */
+#gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+#gate form { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 22px;
+  width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
+#gate h1 { margin: 0; font-size: 18px; }
+#gate p { margin: 0 0 6px; font-size: 13px; }
+#gate input { background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 8px 10px; color: var(--text); font-size: 15px; }
+#gate input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+#gate button { padding: 8px 12px; font-size: 14px; }
+#gate-msg { font-size: 12px; color: var(--text-2); min-height: 1.4em; }
+#gate-msg.bad { color: var(--s-paused); }
+</style>
+</head>
+<body>
+<div id="gate" hidden>
+  <form id="gate-form" autocomplete="on">
+    <h1>northland projects</h1>
+    <p class="dim">Private. Sign in with your email to continue.</p>
+    <input id="gate-email" type="email" placeholder="email" required autocomplete="email">
+    <input id="gate-code" type="text" inputmode="numeric" placeholder="6-digit code" autocomplete="one-time-code" hidden>
+    <button id="gate-btn" class="btn primary" type="submit">Send code</button>
+    <div id="gate-msg"></div>
+  </form>
+</div>
+<div class="wrap" hidden>
+  <div class="top">
+    <div class="totals" id="totals"></div>
+    <div class="heat">
+      <div class="hd"><span id="heat-title"></span><span class="legend" id="legend"></span></div>
+      <div id="heatmap"></div>
+    </div>
+  </div>
+  <div class="cols" id="cols">
+    <aside class="side" id="side"></aside>
+    <section class="main" id="main"></section>
+    <aside class="detail" id="detail" hidden></aside>
+  </div>
+  <div class="foot" id="foot"></div>
+</div>
+<div id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+function boot(DATA) {
+  const P = DATA.projects;
+  const TODAY = new Date(DATA.built + 'T00:00:00');
+  const STATUSES = ['active', 'shipped', 'prototype', 'idea', 'paused', 'reference', 'archived', 'drop', 'unknown'];
+  const KIND_LABEL = { session: 'session', commit: 'commit', push: 'push', log: 'log entry' };
+  const $ = (s, el) => (el || document).querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const catColor = c => `var(--c-${c.replace(/[^a-z0-9-]/gi, '-')}, var(--c-other))`;
+  const stColor = s => `var(--s-${s}, var(--s-unknown))`;
+
+  // ---------------------------------------------------------------- state
+  const state = {
+    cats: new Set(DATA.categories),
+    statuses: new Set(STATUSES.filter(s => s !== 'drop')),
+    hasNext: false, hasQ: false, stale: false, search: '',
+    sort: 'activity', view: 'projects', selected: null,
+  };
+  try {
+    const saved = JSON.parse(localStorage.getItem('nl-dash') || '{}');
+    if (saved.sort) state.sort = saved.sort;
+    if (saved.statuses) state.statuses = new Set(saved.statuses);
+  } catch (e) {}
+  if (location.hash.length > 1) state.selected = decodeURIComponent(location.hash.slice(1));
+
+  function persist() {
+    try { localStorage.setItem('nl-dash', JSON.stringify({ sort: state.sort, statuses: [...state.statuses] })); } catch (e) {}
+  }
+
+  // ---------------------------------------------------------------- dates
+  function daysAgo(iso) {
+    if (!iso) return null;
+    return Math.round((TODAY - new Date(iso + 'T00:00:00')) / 86400000);
+  }
+  function rel(iso) {
+    const d = daysAgo(iso);
+    if (d === null) return '—';
+    if (d <= 0) return 'today';
+    if (d === 1) return 'yesterday';
+    if (d < 30) return d + 'd ago';
+    if (d < 365) return Math.round(d / 30) + 'mo ago';
+    return (d / 365).toFixed(1).replace('.0', '') + 'y ago';
+  }
+  function isStale(p) {
+    if (['archived', 'reference', 'drop'].includes(p.status)) return false;
+    const d = daysAgo(p.last_activity);
+    return d === null || d > DATA.stale_days;
+  }
+
+  // ---------------------------------------------------------------- filters
+  function visible() {
+    const q = state.search.trim().toLowerCase();
+    return P.filter(p =>
+      state.cats.has(p.category) && state.statuses.has(p.status)
+      && (!state.hasNext || p.next_open > 0)
+      && (!state.hasQ || p.questions > 0)
+      && (!state.stale || isStale(p))
+      && (!q || (p.name + ' ' + p.stack.join(' ') + ' ' + (p.purpose || '') + ' ' + p.blurb + ' ' + p.category).toLowerCase().includes(q))
+    );
+  }
+  function sorted(list) {
+    const l = list.slice();
+    if (state.sort === 'name') l.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    else if (state.sort === 'category') l.sort((a, b) => (DATA.categories.indexOf(a.category) - DATA.categories.indexOf(b.category)) || a.name.localeCompare(b.name));
+    else l.sort((a, b) => (b.last_activity || '').localeCompare(a.last_activity || '') || a.name.localeCompare(b.name));
+    return l;
+  }
+
+  // ---------------------------------------------------------------- totals
+  function renderTotals() {
+    const live = P.filter(p => p.status !== 'drop');
+    const n = s => live.filter(p => p.status === s).length;
+    const tiles = [['projects', live.length - n('idea')], ['ideas', n('idea')], ['active', n('active')], ['shipped', n('shipped')], ['paused', n('paused')],
+      ['next steps', live.reduce((a, p) => a + p.next_open, 0)], ['open questions', live.reduce((a, p) => a + p.questions, 0)]];
+    $('#totals').innerHTML = tiles.map(([l, v]) => `<div class="tile"><div class="n">${v}</div><div class="l">${l}</div></div>`).join('');
+  }
+
+  // ---------------------------------------------------------------- heatmap
+  const heat = {};   // 'YYYY-MM-DD' -> { total, cats: {cat: n}, projects: {name: {session, commit, push}} }
+  for (const p of P) {
+    if (p.status === 'drop') continue;
+    for (const [d, kind, cnt] of p.activity) {
+      const h = heat[d] || (heat[d] = { total: 0, cats: {}, projects: {} });
+      h.total += cnt;
+      h.cats[p.category] = (h.cats[p.category] || 0) + cnt;
+      const pr = h.projects[p.name] || (h.projects[p.name] = {});
+      pr[kind] = (pr[kind] || 0) + cnt;
+    }
+  }
+  function iso(d) { return d.toISOString().slice(0, 10); }
+  function renderHeatmap() {
+    const cell = 11, gap = 2, step = cell + gap, weeks = 52;
+    const end = new Date(TODAY);
+    const start = new Date(end); start.setDate(end.getDate() - (weeks * 7 - 1)); start.setDate(start.getDate() - start.getDay());
+    const totalWeeks = Math.ceil(((end - start) / 86400000 + 1) / 7);
+    const w = 30 + totalWeeks * step, h = 16 + 7 * step;
+    const totals = Object.keys(heat).filter(d => d >= iso(start)).map(d => heat[d].total).sort((a, b) => a - b);
+    const q = k => totals.length ? totals[Math.min(totals.length - 1, Math.floor(totals.length * k))] : 1;
+    const t1 = q(.25), t2 = q(.5), t3 = q(.75);
+    const level = n => n <= 0 ? 0 : n <= t1 ? 1 : n <= t2 ? 2 : n <= t3 ? 3 : 4;
+    const alpha = [0, .35, .55, .78, 1];
+    let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="activity heatmap">`;
+    ['Mon', 'Wed', 'Fri'].forEach((l, i) => { svg += `<text x="0" y="${16 + (1 + i * 2) * step + 9}">${l}</text>`; });
+    let lastMonth = -1, activeDays = 0;
+    const d = new Date(start);
+    for (let wk = 0; wk < totalWeeks; wk++) {
+      for (let dow = 0; dow < 7; dow++) {
+        if (d > end) break;
+        const key = iso(d);
+        const x = 30 + wk * step, y = 16 + dow * step;
+        if (d.getMonth() !== lastMonth && dow === 0) {
+          if (wk < totalWeeks - 1) svg += `<text x="${x}" y="10">${d.toLocaleString('en', { month: 'short' })}</text>`;
+          lastMonth = d.getMonth();
+        }
+        const hd = heat[key];
+        let fill = 'var(--surface-3)', op = 1;
+        if (hd) {
+          activeDays++;
+          const dom = Object.entries(hd.cats).sort((a, b) => b[1] - a[1])[0][0];
+          fill = catColor(dom); op = alpha[level(hd.total)];
+        }
+        svg += `<rect data-d="${key}" x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" fill="${fill}" fill-opacity="${op}"></rect>`;
+        d.setDate(d.getDate() + 1);
+      }
+    }
+    svg += '</svg>';
+    $('#heatmap').innerHTML = svg;
+    $('#heat-title').textContent = `52 weeks · ${activeDays} active days · color = dominant category, shade = volume`;
+    $('#legend').innerHTML = DATA.categories.map(c =>
+      `<button data-cat="${esc(c)}" class="${state.cats.has(c) ? '' : 'off'}" title="toggle ${esc(c)}"><span class="dot" style="background:${catColor(c)}"></span>${esc(c)}</button>`).join('');
+    $('#legend').onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      const c = b.dataset.cat;
+      if (state.cats.has(c) && state.cats.size === 1) state.cats = new Set(DATA.categories);
+      else if (e.shiftKey || state.cats.size === DATA.categories.length) { state.cats = new Set([c]); }
+      else if (state.cats.has(c)) state.cats.delete(c); else state.cats.add(c);
+      renderAll();
+    };
+    const tip = $('#tip');
+    $('#heatmap').onmousemove = e => {
+      const r = e.target.closest('rect'); if (!r) { tip.style.display = 'none'; return; }
+      const key = r.dataset.d, hd = heat[key];
+      let html = `<b>${key}</b>`;
+      if (hd) {
+        const rows = Object.entries(hd.projects).sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0));
+        html += rows.slice(0, 12).map(([n, k]) => `<div>${esc(n)} <span class="dim">${Object.entries(k).map(([kk, v]) => v + ' ' + KIND_LABEL[kk] + (v > 1 ? 's' : '')).join(', ')}</span></div>`).join('');
+        if (rows.length > 12) html += `<div class="dim">+${rows.length - 12} more</div>`;
+      } else html += '<div class="dim">no activity</div>';
+      tip.innerHTML = html; tip.style.display = 'block';
+      const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
+      const y = e.clientY + 16 + tip.offsetHeight > window.innerHeight ? e.clientY - tip.offsetHeight - 8 : e.clientY + 16;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    };
+    $('#heatmap').onmouseleave = () => { tip.style.display = 'none'; };
+  }
+
+  // ---------------------------------------------------------------- sidebar
+  function renderSide() {
+    const live = P;
+    const cnt = f => live.filter(f).length;
+    let h = '<h3>Search</h3><input type="search" id="q" placeholder="name, stack, purpose" value="' + esc(state.search) + '">';
+    h += '<h3>Category</h3>' + DATA.categories.map(c =>
+      `<label><input type="checkbox" data-cat="${esc(c)}" ${state.cats.has(c) ? 'checked' : ''}><span class="dot" style="background:${catColor(c)}"></span>${esc(c)}<span class="cnt">${cnt(p => p.category === c && p.status !== 'drop')}</span></label>`).join('');
+    h += '<div class="row"><button data-act="cats-all">all</button><button data-act="cats-none">none</button></div>';
+    h += '<h3>Status</h3>' + STATUSES.map(s =>
+      `<label><input type="checkbox" data-st="${s}" ${state.statuses.has(s) ? 'checked' : ''}><span class="dot" style="background:${stColor(s)}"></span>${s}<span class="cnt">${cnt(p => p.status === s)}</span></label>`).join('');
+    h += '<h3>Only</h3>';
+    h += `<label><input type="checkbox" data-flag="hasNext" ${state.hasNext ? 'checked' : ''}>has next steps<span class="cnt">${cnt(p => p.next_open > 0)}</span></label>`;
+    h += `<label><input type="checkbox" data-flag="hasQ" ${state.hasQ ? 'checked' : ''}>has open questions<span class="cnt">${cnt(p => p.questions > 0)}</span></label>`;
+    h += `<label title="no session, commit or push in ${DATA.stale_days} days (archived, reference, drop excluded)"><input type="checkbox" data-flag="stale" ${state.stale ? 'checked' : ''}>stale (&gt;${DATA.stale_days}d)<span class="cnt">${cnt(isStale)}</span></label>`;
+    h += '<h3>Sort</h3><select id="sort">' + [['activity', 'last activity'], ['name', 'name'], ['category', 'category']].map(([v, l]) =>
+      `<option value="${v}" ${state.sort === v ? 'selected' : ''}>${l}</option>`).join('') + '</select>';
+    const side = $('#side');
+    side.innerHTML = h;
+    side.onchange = e => {
+      const t = e.target;
+      if (t.dataset.cat) { t.checked ? state.cats.add(t.dataset.cat) : state.cats.delete(t.dataset.cat); }
+      else if (t.dataset.st) { t.checked ? state.statuses.add(t.dataset.st) : state.statuses.delete(t.dataset.st); persist(); }
+      else if (t.dataset.flag) state[t.dataset.flag] = t.checked;
+      else if (t.id === 'sort') { state.sort = t.value; persist(); }
+      renderAll();
+    };
+    side.oninput = e => { if (e.target.id === 'q') { state.search = e.target.value; renderMain(); } };
+    side.onclick = e => {
+      const b = e.target.closest('button[data-act]'); if (!b) return;
+      state.cats = b.dataset.act === 'cats-all' ? new Set(DATA.categories) : new Set();
+      renderAll();
+    };
+  }
+
+  // ---------------------------------------------------------------- main
+  function chip(text, color, guess) { return `<span class="chip ${guess ? 'guess' : ''}" style="--chip:${color}" ${guess ? 'title="status is a guess (not hand-set)"' : ''}>${esc(text)}</span>`; }
+  function renderMain() {
+    const list = sorted(visible());
+    let h = `<div class="bar"><div class="tabs"><button data-v="projects" class="${state.view === 'projects' ? 'on' : ''}">projects</button><button data-v="categories" class="${state.view === 'categories' ? 'on' : ''}">categories</button></div>`;
+    h += `<span class="count">${state.view === 'projects' ? list.length + ' of ' + P.length + ' projects' : DATA.categories.length + ' categories'}</span></div>`;
+    if (state.view === 'projects') {
+      const th = (k, l) => `<th data-sort="${k}" class="${state.sort === k ? 'sorted' : ''}">${l}</th>`;
+      h += `<div class="tbl"><table><thead><tr>${th('name', 'project')}${th('category', 'category')}<th>status</th><th>stack</th>${th('activity', 'last activity')}<th>machines</th><th title="open next steps · open questions">next · ?</th></tr></thead><tbody>`;
+      for (const p of list) {
+        const stale = isStale(p);
+        h += `<tr class="p ${state.selected === p.id ? 'sel' : ''}" data-id="${esc(p.id)}">`
+          + `<td class="name">${esc(p.name)}${p.has_claude_md ? ' <span class="dim" title="has CLAUDE.md">§</span>' : ''}${p.brief ? '' : ' <span class="nobrief">no brief</span>'}<span class="sub">${esc(p.blurb)}</span></td>`
+          + `<td>${chip(p.category, catColor(p.category))}</td>`
+          + `<td>${chip(p.status, stColor(p.status), !p.status_hand)}</td>`
+          + `<td class="stack">${esc(p.stack.join(', '))}</td>`
+          + `<td class="num ${stale ? 'warn' : ''}" title="${esc(p.last_activity || 'no dated activity')}">${rel(p.last_activity)}</td>`
+          + `<td><span class="mach">${p.machines.map(m => `<span class="${m.dirty ? 'dirty' : ''}" title="${esc(m.path)}${m.branch ? ' (' + esc(m.branch) + (m.dirty ? ', dirty' : '') + ')' : ''}">${esc(m.label)}${m.dirty ? '*' : ''}</span>`).join('')}${p.machines.length ? '' : (p.repo_url ? '<span class="dim">remote</span>' : '<span class="dim">—</span>')}</span></td>`
+          + `<td class="num"><span class="cnts"><b>${p.next_open || '<span class="dim">0</span>'}</b><span class="dim">·</span><b>${p.questions || '<span class="dim">0</span>'}</b></span></td></tr>`;
+      }
+      h += '</tbody></table></div>';
+    } else {
+      const cut = new Date(TODAY); cut.setDate(cut.getDate() - 90); const cutIso = iso(cut);
+      h += '<div class="tbl"><table><thead><tr><th>category</th><th>projects</th><th>active</th><th>shipped</th><th>most recent activity</th><th title="distinct days with a session or commit in the last 90 days, across the category">work days (90d)</th><th>next · ?</th></tr></thead><tbody>';
+      for (const c of DATA.categories) {
+        const ps = P.filter(p => p.category === c && p.status !== 'drop');
+        const days = new Set();
+        for (const p of ps) for (const [d, k] of p.activity) if (d >= cutIso && k !== 'push') days.add(d);
+        const recent = ps.map(p => p.last_activity).filter(Boolean).sort().pop();
+        h += `<tr class="cat-row" data-cat="${esc(c)}"><td>${chip(c, catColor(c))}</td><td class="num">${ps.length}</td><td class="num">${ps.filter(p => p.status === 'active').length}</td><td class="num">${ps.filter(p => p.status === 'shipped').length}</td><td class="num" title="${esc(recent || '')}">${rel(recent)}</td><td class="num">${days.size}</td><td class="num">${ps.reduce((a, p) => a + p.next_open, 0)} · ${ps.reduce((a, p) => a + p.questions, 0)}</td></tr>`;
+      }
+      h += '</tbody></table></div>';
+    }
+    const main = $('#main');
+    main.innerHTML = h;
+    main.onclick = e => {
+      const tab = e.target.closest('button[data-v]');
+      if (tab) { state.view = tab.dataset.v; renderMain(); return; }
+      const th = e.target.closest('th[data-sort]');
+      if (th) { state.sort = th.dataset.sort; persist(); renderSide(); renderMain(); return; }
+      const cr = e.target.closest('tr.cat-row');
+      if (cr) { state.cats = new Set([cr.dataset.cat]); state.view = 'projects'; renderAll(); return; }
+      const tr = e.target.closest('tr.p');
+      if (tr) select(tr.dataset.id);
+    };
+  }
+
+  // ---------------------------------------------------------------- markdown
+  function inline(s) {
+    s = esc(s);
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+    s = s.replace(/\(\?\)/g, '<span class="q" title="inferred, verify">(?)</span>');
+    return s;
+  }
+  function md(text) {
+    const out = []; let list = null, para = [], pre = null;
+    const flushP = () => { if (para.length) { out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+    const flushL = () => { if (list) { out.push('</ul>'); list = null; } };
+    for (const raw of text.split('\n')) {
+      const l = raw.replace(/\s+$/, '');
+      if (pre !== null) { if (l.startsWith('```')) { out.push('<pre>' + esc(pre.join('\n')) + '</pre>'); pre = null; } else pre.push(l); continue; }
+      if (l.startsWith('```')) { flushP(); flushL(); pre = []; continue; }
+      let m;
+      if ((m = l.match(/^(#{1,3})\s+(.*)/))) { flushP(); flushL(); const lv = m[1].length + 1; out.push(`<h${lv}>${inline(m[2])}</h${lv}>`); }
+      else if ((m = l.match(/^\s*- \[([ xX])\]\s*(.*)/))) { flushP(); if (!list) { out.push('<ul>'); list = true; } const done = m[1] !== ' '; out.push(`<li class="task ${done ? 'done' : ''}"><input type="checkbox" disabled ${done ? 'checked' : ''}>${inline(m[2])}</li>`); }
+      else if ((m = l.match(/^\s*[-*]\s+(.*)/))) { flushP(); if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + inline(m[1]) + '</li>'); }
+      else if (!l.trim()) { flushP(); flushL(); }
+      else { flushL(); para.push(l); }
+    }
+    flushP(); flushL();
+    if (pre !== null) out.push('<pre>' + esc(pre.join('\n')) + '</pre>');
+    return out.join('\n');
+  }
+
+  // ---------------------------------------------------------------- detail
+  function select(id) {
+    state.selected = state.selected === id ? null : id;
+    try { history.replaceState(null, '', state.selected ? '#' + encodeURIComponent(state.selected) : location.pathname); } catch (e) {}
+    renderDetail(); renderMain();
+  }
+  function copyText(t) {
+    const done = () => toast('resume prompt copied');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => fallback());
+    else fallback();
+    function fallback() {
+      const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { toast('copy failed, select the text manually'); }
+      ta.remove();
+    }
+  }
+  let toastTimer;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1600); }
+
+  function renderDetail() {
+    const box = $('#detail'), cols = $('#cols');
+    const p = P.find(x => x.id === state.selected);
+    if (!p) { box.hidden = true; cols.classList.remove('with-detail'); return; }
+    box.hidden = false; cols.classList.add('with-detail');
+    let h = `<div class="hd"><h2>${esc(p.name)}</h2><button class="x" title="close (Esc)">×</button></div>`;
+    h += `<div class="meta">${chip(p.status, stColor(p.status), !p.status_hand)}${chip(p.category, catColor(p.category))}`
+      + (p.stack.length ? `<span>${esc(p.stack.join(', '))}</span>` : '')
+      + (p.repo_url ? `<a href="${esc(p.repo_url)}" target="_blank" rel="noopener">repo</a>` : '<span class="dim">local only</span>')
+      + (p.live_url ? `<a href="${esc(p.live_url)}" target="_blank" rel="noopener">live</a>` : '')
+      + `<span title="last activity">${rel(p.last_activity)}${p.last_activity ? ' <code>' + p.last_activity + '</code>' : ''}</span>`
+      + `<span>${p.sessions} session${p.sessions === 1 ? '' : 's'}</span>`
+      + (p.has_claude_md ? '<span title="CLAUDE.md present">§ CLAUDE.md</span>' : '<span class="dim">no CLAUDE.md</span>') + '</div>';
+    if (p.machines.length) h += '<div class="paths">' + p.machines.map(m => `<div><b>${esc(m.label)}</b> ${esc(m.path)}${m.branch ? ' <span class="dim">' + esc(m.branch) + '</span>' : ''}${m.dirty ? ' <span class="warn">dirty</span>' : ''}</div>`).join('') + '</div>';
+    if (p.status_reason && !p.status_hand) h += `<div class="paths" title="why the status guess">guess: ${esc(p.status_reason)}</div>`;
+    const ot = p.open_thread;
+    if (ot && (ot.last_user || ot.last_assistant)) {
+      h += `<div class="auto"><h3>Last exchange <span class="dim">(automatic, ${esc((ot.date || '').slice(0, 10))}${ot.title ? ' · ' + esc(ot.title) : ''})</span></h3>`
+        + (ot.last_user ? `<p><b>me:</b> ${esc(ot.last_user)}</p>` : '') + (ot.last_assistant ? `<p><b>claude:</b> ${esc(ot.last_assistant)}</p>` : '') + '</div>';
+    }
+    if (p.resume) h += `<div class="actions"><button class="btn primary" id="copy">Copy resume prompt</button><span class="dim" style="font-size:12px;align-self:center">notes/${esc(p.id)}.md</span></div>`;
+    if (p.brief) {
+      let body = p.brief.replace(/^# .*\n/, '').replace(/^\*\*Status:\*\*.*\n?/m, '').replace(/^\*\*Repo:\*\*.*\n?/m, '');
+      const parts = body.split(/^## Resume prompt\s*$/mi);
+      h += `<div class="md">${md(parts[0])}`;
+      if (parts[1]) h += `<h3>Resume prompt</h3><pre>${esc(parts[1].trim())}</pre>`;
+      h += '</div>';
+    }
+    else h += `<p class="nobrief">No brief. Create notes/${esc(p.id)}.md and rebuild.</p>` + (p.notes_field ? `<div class="md"><h3>notes (projects.json)</h3><p>${inline(p.notes_field)}</p></div>` : '');
+    if (p.session_titles.length) h += '<div class="sess"><h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 4px">Recent sessions</h3><ul style="padding-left:0;list-style:none;margin:0">'
+      + p.session_titles.map(t => `<li><span class="d">${esc(t.date)}</span>${esc(t.title)}${t.machine ? ' <span class="dim">' + esc(DATA.machines[t.machine] || t.machine) + '</span>' : ''}</li>`).join('') + '</ul></div>';
+    box.innerHTML = h;
+    $('.x', box).onclick = () => select(p.id);
+    const cp = $('#copy', box); if (cp) cp.onclick = () => copyText(p.resume);
+    box.scrollTop = 0;
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.selected) select(state.selected); });
+
+  function renderAll() { renderSide(); renderHeatmap(); renderMain(); renderDetail(); }
+  renderTotals();
+  renderAll();
+  $('#foot').textContent = `built ${DATA.built} from projects.json + notes/ · nothing here is editable`;
+  document.querySelector('.wrap').hidden = false;
+}
+
+(function () {
+  const SB = 'https://lwbatdclpclwyuglzwgg.supabase.co', KEY = 'sb_publishable_8av9WMOlUWv-zvH6H7hVdg_P0dPRx1D';
+  const $ = s => document.querySelector(s);
+  const gate = $('#gate'), msg = $('#gate-msg'), email = $('#gate-email'), code = $('#gate-code');
+  const hdr = tok => ({ 'apikey': KEY, 'Content-Type': 'application/json', ...(tok ? { 'Authorization': 'Bearer ' + tok } : {}) });
+  const load = () => { try { return JSON.parse(localStorage.getItem('pm-session') || 'null'); } catch (e) { return null; } };
+  const save = s => { try { s ? localStorage.setItem('pm-session', JSON.stringify(s)) : localStorage.removeItem('pm-session'); } catch (e) {} };
+  const say = (t, bad) => { msg.textContent = t; msg.className = bad ? 'bad' : ''; };
+  let stage = 'email';
+
+  async function post(path, body, tok) {
+    const r = await fetch(SB + path, { method: 'POST', headers: hdr(tok), body: JSON.stringify(body) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.msg || j.error_description || j.message || j.error || ('HTTP ' + r.status));
+    return j;
+  }
+  async function session() {
+    let s = load(); if (!s) return null;
+    if ((s.expires_at || 0) - 60 < Date.now() / 1000) {
+      try { s = await post('/auth/v1/token?grant_type=refresh_token', { refresh_token: s.refresh_token }); save(s); }
+      catch (e) { save(null); return null; }
+    }
+    return s;
+  }
+  async function loadData(s) {
+    const r = await fetch(SB + '/rest/v1/pm_snapshot?id=eq.current&select=data,built', { headers: hdr(s.access_token) });
+    if (r.status === 401) { save(null); return show('Session expired, sign in again.'); }
+    const rows = await r.json();
+    if (!Array.isArray(rows) || !rows.length) return show('Signed in, but this email is not on the list.', true);
+    gate.hidden = true;
+    boot(rows[0].data);
+    const out = document.createElement('a'); out.href = '#'; out.textContent = ' · sign out'; out.onclick = e => { e.preventDefault(); signOut(); };
+    $('#foot').appendChild(out);
+  }
+  function show(text, bad) { gate.hidden = false; document.querySelector('.wrap').hidden = true; if (text) say(text, bad); }
+  async function signOut() { const s = load(); save(null); try { if (s) await post('/auth/v1/logout', {}, s.access_token); } catch (e) {} location.reload(); }
+
+  $('#gate-form').onsubmit = async e => {
+    e.preventDefault();
+    try {
+      if (stage === 'email') {
+        say('Sending code…');
+        await post('/auth/v1/otp', { email: email.value.trim(), create_user: true });
+        stage = 'code'; code.hidden = false; code.focus(); $('#gate-btn').textContent = 'Sign in';
+        say('Check your email for a 6-digit code (or use the code from the link).');
+      } else {
+        say('Checking…');
+        const s = await post('/auth/v1/verify', { type: 'email', email: email.value.trim(), token: code.value.trim() });
+        save(s); say(''); await loadData(s);
+      }
+    } catch (err) { say(err.message, true); }
+  };
+  (async () => { const s = await session(); if (s) { say('Loading…'); await loadData(s); } else show(''); })();
+})();
+
+</script>
+</body>
+</html>
