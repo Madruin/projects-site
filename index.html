@@ -26,6 +26,24 @@ a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: un
 button, select, input { font: inherit; color: inherit; }
 .wrap { padding-block: 16px; padding-inline: 20px; max-width: 1700px; margin: 0 auto; }
 
+/* ---- header + help ---- */
+.hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; font-size: 13px; }
+.hdr b { font-size: 15px; }
+.hdr .grow { flex: 1; }
+#updated.warn { color: var(--s-paused); }
+#help { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 20; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px; overflow: auto; }
+.help-box { background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--radius); padding: 18px 22px 22px; max-width: 720px; width: 100%; font-size: 14px; }
+.help-box .hd { display: flex; justify-content: space-between; align-items: center; }
+.help-box h2 { margin: 0; font-size: 18px; }
+.help-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 6px; }
+.help-box p, .help-box li { color: var(--text-2); line-height: 1.5; }
+.help-box ul, .help-box ol { padding-left: 20px; margin: 4px 0; }
+.help-box li { margin: 4px 0; }
+.help-box b { color: var(--text); }
+.help-box code { font-family: var(--mono); font-size: 12px; background: var(--surface-3); border-radius: 3px; padding: 0 4px; }
+.help-box .x { background: none; border: 0; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; }
+.help-box .x:hover { color: var(--text); }
+
 /* ---- top ---- */
 .top { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-bottom: 18px; }
 .totals { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -173,6 +191,69 @@ td.name .sub { display: block; font-weight: 400; color: var(--muted); font-size:
   </form>
 </div>
 <div class="wrap" hidden>
+  <div class="hdr">
+    <b>northland projects</b>
+    <span id="updated" class="dim"></span>
+    <span class="grow"></span>
+    <button id="help-btn" class="btn" type="button">how this works</button>
+  </div>
+  <div id="help" hidden>
+    <div class="help-box">
+      <div class="hd"><h2>How this works</h2><button class="x" id="help-x" title="close (Esc)">×</button></div>
+      <p>This is a read-only board of every project and idea I have. It updates itself. My job is to work; the board's job is to remember where everything stands.</p>
+
+      <h3>What updates by itself</h3>
+      <ul>
+        <li><b>Every night at 03:30</b> the main PC (MATICORE) scans its folders and GitHub, reads every Claude Code session and commit from the day, and rewrites the brief of each project that had activity: what it was doing, next steps ticked or added, open questions, one new log line. A project seen for the first time gets a first brief.</li>
+        <li>The <b>updated</b> line at the top says when that last happened. If it is older than a day, the PC was off, asleep or signed out at 03:30; it catches up the next time it is on.</li>
+        <li>The heatmap, "last activity", the machines column and "Last exchange" come straight from the scans; nothing there is written by hand.</li>
+      </ul>
+
+      <h3>What I do</h3>
+      <ol>
+        <li><b>Pick a project here.</b> Sort by last activity, or filter for "has next steps" or "stale".</li>
+        <li><b>Work in Claude Code on MATICORE</b>, in the project's own folder. Continue its existing session; from another device, continue that same session through Remote Control. Only a brand-new session needs the <b>resume prompt</b> (copy button on the project page) as its first message.</li>
+        <li><b>Push when done.</b> That is the only habit. It keeps the work reachable from every machine.</li>
+      </ol>
+
+      <h3>Reading a project page</h3>
+      <ul>
+        <li><b>Where it stopped</b> is written from the last session or commit. <b>Last exchange</b> underneath is the literal last message pair, automatic.</li>
+        <li><b>Next steps</b> and <b>Open questions</b> are the to-do list and the decisions never made. They are for reading, not for filling in here.</li>
+        <li><b>(?)</b> means Claude inferred it rather than read it. Treat those as guesses until confirmed.</li>
+        <li>A <b>dashed status chip</b> means the status is a guess too; a solid one was set by hand.</li>
+        <li><b>main*</b> in the machines column means that clone has uncommitted changes.</li>
+      </ul>
+
+      <h3>Answering a question, correcting a mistake</h3>
+      <p>Say it in the project's own Claude Code session, in plain words: "the map is personal, not for tourists" or "that next step is done, we shipped it." The nightly run reads the session and updates the brief. Nothing else to do. For anything about the board itself (wrong category, wrong status, a project that should be dropped), say it in the <b>northland-inventory</b> session instead.</p>
+
+      <h3>A new idea</h3>
+      <p>Tell Claude in the northland-inventory session: "new idea: ..." It writes a short brief and the idea appears here as an <b>idea</b> the next morning. When the idea gets a folder or repo, the same brief carries over.</p>
+
+      <h3>Work done somewhere other than MATICORE</h3>
+      <ul>
+        <li>Sessions continued through Remote Control count as MATICORE sessions. Nothing to do.</li>
+        <li>Commits pushed from the laptop, the GPD or a claude.ai session show up the next night, once MATICORE fetches them.</li>
+        <li>Sessions run directly on the laptop or GPD appear only if that machine runs the nightly too, and then only by title.</li>
+      </ul>
+
+      <h3>Signing in (projects.northland.eco)</h3>
+      <ul>
+        <li>Enter an allowed email, get a code by email, type it. Codes are single-use and the newest one replaces the older ones.</li>
+        <li>Supabase sends only a few sign-in emails per hour. If it refuses, wait an hour or use a code you already have via "I already have a code".</li>
+        <li>The browser remembers the sign-in. "sign out" is at the bottom of the page.</li>
+        <li>Only emails in the <code>pm_members</code> table can see data. Everyone else gets an empty page.</li>
+      </ul>
+
+      <h3>If the board looks wrong</h3>
+      <ul>
+        <li>Check the updated line first. Stale board usually means the nightly did not run.</li>
+        <li>To refresh by hand on MATICORE: open the northland-inventory folder in PowerShell and run <code>python nightly.py --hub</code>. It takes about ten minutes and pushes here when done.</li>
+        <li>A local copy that works without internet is <code>dashboard.html</code> in that folder.</li>
+      </ul>
+    </div>
+  </div>
   <div class="top">
     <div class="totals" id="totals"></div>
     <div class="heat">
@@ -514,12 +595,36 @@ function boot(DATA) {
     box.scrollTop = 0;
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.selected) select(state.selected); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.selected && $('#help').hidden) select(state.selected); });
 
   function renderAll() { renderSide(); renderHeatmap(); renderMain(); renderDetail(); }
+
+  // ---------------------------------------------------------------- header
+  (function renderHeader() {
+    const u = $('#updated');
+    const when = DATA.nightly ? DATA.nightly.finished : DATA.built_at;
+    const t = new Date(when);
+    const ageH = (Date.now() - t) / 3600000;
+    const fmt = t.toLocaleString('en', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    let text = 'updated ' + fmt;
+    if (DATA.nightly) {
+      text += ' · nightly run' + (DATA.nightly.briefs_updated ? `, ${DATA.nightly.briefs_updated} brief${DATA.nightly.briefs_updated === 1 ? '' : 's'} updated` : ', no brief changes');
+      if (DATA.nightly.ai_skipped) text += ' · brief pass skipped: ' + DATA.nightly.ai_skipped;
+    } else text += ' · built by hand';
+    if (ageH > 30) text += ' · older than a day, the nightly run may not have happened';
+    u.textContent = text;
+    u.classList.toggle('warn', ageH > 30 || !!(DATA.nightly && DATA.nightly.ai_skipped));
+    const help = $('#help');
+    $('#help-btn').onclick = () => { help.hidden = false; };
+    $('#help-x').onclick = () => { help.hidden = true; };
+    help.onclick = e => { if (e.target === help) help.hidden = true; };
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !help.hidden) help.hidden = true; });
+    try { if (!localStorage.getItem('pm-help-seen')) { help.hidden = false; localStorage.setItem('pm-help-seen', '1'); } } catch (e) {}
+  })();
+
   renderTotals();
   renderAll();
-  $('#foot').textContent = `built ${DATA.built} from projects.json + notes/ · nothing here is editable`;
+  $('#foot').textContent = `built ${DATA.built_at.replace('T', ' ').slice(0, 16)} from projects.json + notes/ · nothing here is editable`;
   document.querySelector('.wrap').hidden = false;
 }
 
