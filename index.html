@@ -155,7 +155,7 @@ td.name .sub { display: block; font-weight: 400; color: var(--muted); font-size:
 #gate button { padding: 8px 12px; font-size: 14px; }
 #gate-msg { font-size: 12px; color: var(--text-2); min-height: 1.4em; }
 #gate-msg.bad { color: var(--s-paused); }
-#gate-have { color: var(--muted); text-align: center; }
+#gate-have, #gate-reset { color: var(--muted); text-align: center; }
 </style>
 </head>
 <body>
@@ -168,6 +168,7 @@ td.name .sub { display: block; font-weight: 400; color: var(--muted); font-size:
     <button id="gate-btn" class="btn primary" type="submit">Send code</button>
     <div id="gate-msg"></div>
     <a href="#" id="gate-have" class="dim" style="font-size:12px">I already have a code</a>
+    <a href="#" id="gate-reset" class="dim" style="font-size:12px" hidden>Forget this sign-in and start over</a>
   </form>
 </div>
 <div class="wrap" hidden>
@@ -546,14 +547,26 @@ function boot(DATA) {
     return s;
   }
   async function loadData(s) {
-    const r = await fetch(SB + '/rest/v1/pm_snapshot?id=eq.current&select=data,built', { headers: hdr(s.access_token) });
+    let r, rows;
+    try {
+      r = await fetch(SB + '/rest/v1/pm_snapshot?id=eq.current&select=data,built', { headers: hdr(s.access_token) });
+    } catch (e) { return show('Could not reach Supabase (' + e.message + '). Check the connection and reload.', true); }
     if (r.status === 401) { save(null); return show('Session expired, sign in again.'); }
-    const rows = await r.json();
-    if (!Array.isArray(rows) || !rows.length) return show('Signed in, but this email is not on the list.', true);
+    try { rows = await r.json(); } catch (e) { return show('Bad reply from Supabase (HTTP ' + r.status + ').', true); }
+    if (!r.ok) return show('Supabase refused the request (HTTP ' + r.status + '): ' + (rows.message || rows.error || ''), true);
+    if (!Array.isArray(rows) || !rows.length) return show('Signed in as ' + (jwtEmail(s) || 'unknown') + ', but this email is not on the list (or no data has been pushed yet).', true);
+    try {
+      boot(rows[0].data);
+    } catch (e) {
+      console.error(e);
+      return show('The data loaded but the page failed to render: ' + e.message, true);
+    }
     gate.hidden = true;
-    boot(rows[0].data);
     const out = document.createElement('a'); out.href = '#'; out.textContent = ' · sign out'; out.onclick = e => { e.preventDefault(); signOut(); };
     $('#foot').appendChild(out);
+  }
+  function jwtEmail(s) {
+    try { return JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).email; } catch (e) { return null; }
   }
   function show(text, bad) { gate.hidden = false; document.querySelector('.wrap').hidden = true; if (text) say(text, bad); }
   async function signOut() { const s = load(); save(null); try { if (s) await post('/auth/v1/logout', {}, s.access_token); } catch (e) {} location.reload(); }
@@ -599,9 +612,12 @@ function boot(DATA) {
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
     return s;
   }
+  $('#gate-reset').onclick = e => { e.preventDefault(); save(null); location.reload(); };
   (async () => {
-    const s = fromLink() || await session();
-    if (s) { say('Loading…'); await loadData(s); } else show('');
+    try {
+      const s = fromLink() || await session();
+      if (s) { say('Loading…'); $('#gate-reset').hidden = false; await loadData(s); } else show('');
+    } catch (e) { console.error(e); show('Unexpected error: ' + e.message, true); }
   })();
 })();
 
