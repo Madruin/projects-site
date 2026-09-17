@@ -560,10 +560,11 @@ function boot(DATA) {
     e.preventDefault();
     try {
       if (stage === 'email') {
-        say('Sending code…');
-        await post('/auth/v1/otp', { email: email.value.trim(), create_user: true });
+        say('Sending…');
+        // redirect_to makes the emailed link come back here (must be in Supabase's redirect allowlist)
+        await post('/auth/v1/otp?redirect_to=' + encodeURIComponent(location.origin + location.pathname), { email: email.value.trim(), create_user: true });
         stage = 'code'; code.hidden = false; code.focus(); $('#gate-btn').textContent = 'Sign in';
-        say('Check your email for a 6-digit code (or use the code from the link).');
+        say('Check your email. Type the code here, or open the link on this device.');
       } else {
         say('Checking…');
         const s = await post('/auth/v1/verify', { type: 'email', email: email.value.trim(), token: code.value.trim() });
@@ -571,7 +572,20 @@ function boot(DATA) {
       }
     } catch (err) { say(err.message, true); }
   };
-  (async () => { const s = await session(); if (s) { say('Loading…'); await loadData(s); } else show(''); })();
+  function fromLink() {
+    // A magic link lands here as #access_token=...&refresh_token=...&expires_in=...
+    const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    if (!h.get('access_token')) return null;
+    const s = { access_token: h.get('access_token'), refresh_token: h.get('refresh_token'),
+      expires_at: Math.floor(Date.now() / 1000) + parseInt(h.get('expires_in') || '3600', 10) };
+    save(s);
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    return s;
+  }
+  (async () => {
+    const s = fromLink() || await session();
+    if (s) { say('Loading…'); await loadData(s); } else show('');
+  })();
 })();
 
 </script>
