@@ -602,8 +602,9 @@ function boot(DATA) {
   // ---------------------------------------------------------------- header
   (function renderHeader() {
     const u = $('#updated');
-    const when = DATA.nightly ? DATA.nightly.finished : DATA.built_at;
+    const when = DATA.nightly ? DATA.nightly.finished : (DATA.built_at || DATA.built + 'T00:00');
     const t = new Date(when);
+    if (isNaN(t)) { u.textContent = 'updated ' + (DATA.built || '?'); return; }
     const ageH = (Date.now() - t) / 3600000;
     const fmt = t.toLocaleString('en', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
     let text = 'updated ' + fmt;
@@ -624,7 +625,7 @@ function boot(DATA) {
 
   renderTotals();
   renderAll();
-  $('#foot').textContent = `built ${DATA.built_at.replace('T', ' ').slice(0, 16)} from projects.json + notes/ · nothing here is editable`;
+  $('#foot').textContent = `built ${String(DATA.built_at || DATA.built || '').replace('T', ' ').slice(0, 16)} from projects.json + notes/ · nothing here is editable`;
   document.querySelector('.wrap').hidden = false;
 }
 
